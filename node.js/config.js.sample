@@ -1,0 +1,11 @@
+// Copy this file to config.js and adjust URLs.
+// For other settings check the beacon.js file.
+
+module.exports = {
+  beaconUrl : 'http://beacon',
+  hudsonUrl : 'http://hudson',
+
+  updateInterval : 1000,
+
+  verbose : true,
+};

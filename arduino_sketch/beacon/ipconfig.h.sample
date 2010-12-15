@@ -1,0 +1,9 @@
+// Copy this file to ipconfig.h and set your chosen mac and ip addresses
+
+#ifndef IPCONFIG_H
+#define IPCONFIG_H
+
+#define MAC_ADDRESS { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
+#define IP_ADDRESS  { 192, 168, 1, 168 };
+
+#endif

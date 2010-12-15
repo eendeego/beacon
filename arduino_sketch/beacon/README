@@ -1,0 +1,244 @@
+  Connecting the TLC5940
+    Basic Pin setup:
+    ------------                                  ---u----
+    ARDUINO   13|                           OUT1 |1     28| OUT channel 0
+    10k/2009/ 12|                           OUT2 |2     27|-> GND (VPRG)
+    UNO       11|                           OUT3 |3     26|-> SIN (pin 11)
+            * 10|-> BLANK (pin 23)          OUT4 |4     25|-> SCLK (pin 13)
+               9|-> XLAT (pin 24)             .  |5     24|-> XLAT (pin 9)
+               8|                             .  |6     23|-> BLANK (pin 10)
+               7|-> SIN (pin 26)              .  |7     22|-> GND
+               6|                             .  |8     21|-> VCC (+5V)
+               5|                             .  |9     20|-> 2K Resistor -> GND
+               4|-> SCLK (pin 25)             .  |10    19|-> +5V (DCPRG)
+               3|-> GSCLK (pin 18)            .  |11    18|-> GSCLK (pin 3)
+               2|                             .  |12    17|-> SOUT
+               1|                             .  |13    16|-> XERR
+               0|                           OUT14|14    15| OUT channel 15
+    ------------                                  --------
+
+    -  Put the longer leg (anode) of the LEDs in the +5V and the shorter leg
+         (cathode) in OUT(0-15).
+
+       Arduino Diecimilia / | Arduino Mega /   -> TLC
+       Duemilanove / Uno    | Mega2560         ->
+       ------------------------------------------------------------------------
+    -  +5V                  | +5V              -> 21 and 19 (VCC, DCPRG)
+    -  GND                  | GND              -> 22 and 27 (GND, VPRG)
+    -  digital 7            | digital 7        -> 26        (SIN)
+    -  digital 2            | digital 2        -> 25        (SCLK)
+    -  digital 9            | digital 11       -> 24        (XLAT)
+    -  digital 10*          | digital 12       -> 23        (BLANK)
+    -  digital 3            | digital 9        -> 18        (GSCLK)
+
+    * Read the notes on the ethernet shield about the SS/pin 10 issue on the plain Arduinos.
+
+    -  The 2K resistor between TLC pin 20 and GND will let ~20mA through each
+       LED.  To be precise, it's I = 39.06 / R (in ohms).  This doesn't depend
+       on the LED driving voltage.
+    - (Optional): put a pull-up resistor (~10k) between +5V and BLANK so that
+                  all the LEDs will turn off when the Arduino is reset.
+
+    If you are daisy-chaining more than one TLC, connect the SOUT of the first
+    TLC to the SIN of the next.  All the other pins should just be connected
+    together:
+        BLANK on Arduino -> BLANK of TLC1 -> BLANK of TLC2 -> ...
+        XLAT on Arduino  -> XLAT of TLC1  -> XLAT of TLC2  -> ...
+    The one exception is that each TLC needs it's own resistor between pin 20
+    and GND.
+
+    This library uses the PWM output ability of digital pins 3, 9, 10, and 11.
+    Do not use analogWrite(...) on these pins.
+
+  Configuring the TLC5940 library
+    This sketch uses the TLC 5940 library (r014) found at:
+    http://code.google.com/p/tlc5940arduino/
+
+    In order to use the TLC5940 chip at the same time as the ethernet shield,
+    the TLC library must be configured to operate in bit bang mode and
+    pins that are common to both default setups must be rearranged.
+
+    Setting the operation to bit bang mode is useful even if not using an
+    ethernet shield right away: it can be added later without any need to
+    reprogram the arduino.
+
+    To use the library in bitbang mode, the file tlc_config.h inside
+    (Arduino installation)/libraries/Tlc5940 must be changed from:  
+      
+      #define DATA_TRANSFER_MODE    TLC_SPI
+      //#define DATA_TRANSFER_MODE    TLC_BITBANG
+
+    To:
+
+      //#define DATA_TRANSFER_MODE    TLC_SPI
+      #define DATA_TRANSFER_MODE    TLC_BITBANG
+
+    Locate the ATmega_xx8.h in the Tlc5940 driver and replace the lines:
+    
+      /** SCLK (Arduino digital pin 2) -> SCLK (TLC pin 25) */
+      #define DEFAULT_BB_SCLK_PIN     PD2
+
+    With:
+
+      /** SCLK (Arduino digital pin 5) -> SCLK (TLC pin 25) */
+      #define DEFAULT_BB_SCLK_PIN     PD5
+
+    If using an Arduino Mega, the file Arduino_Mega.h must be changed from:
+
+      /** SIN (Mega pin 51) -> SIN (TLC pin 26) */
+      #define DEFAULT_BB_SIN_PIN      PB2
+      #define DEFAULT_BB_SIN_PORT     PORTB
+      #define DEFAULT_BB_SIN_DDR      DDRB
+      /** SCLK (Mega pin 52) -> SCLK (TLC pin 25) */
+      #define DEFAULT_BB_SCLK_PIN     PB1
+      #define DEFAULT_BB_SCLK_PORT    PORTB
+      #define DEFAULT_BB_SCLK_DDR     DDRB
+
+    To:
+
+      /** SIN (Mega pin 7) -> SIN (TLC pin 26) */
+      #define DEFAULT_BB_SIN_PIN      PH4
+      #define DEFAULT_BB_SIN_PORT     PORTH
+      #define DEFAULT_BB_SIN_DDR      DDRH
+      /** SCLK (Mega pin 2) -> SCLK (TLC pin 25) */
+      #define DEFAULT_BB_SCLK_PIN     PE4
+      #define DEFAULT_BB_SCLK_PORT    PORTE
+      #define DEFAULT_BB_SCLK_DDR     DDRE
+
+    Note: To use different pins, consult the relevant schematic in the arduino's description page
+    (eg. arduino-mega2560-schematic.pdf on http://arduino.cc/en/Main/ArduinoBoardMega2560) to get the
+    mappings from arduino pins to ATmega ports/outputs. Also note that this are the same pins described in the
+    diagram above (Mega 22,23)
+
+  Configuring the ethernet shield / library:
+    Copy ipconfig.h.sample to ipconfig.h and define the mac and IP addresses.
+
+    Both TLC5940 and the Ethernet (actually SPI) libraries use the SS pin on the Arduino. This is not
+    a problem for the Megas, but it is a problem on the plain Arduinos, since pin 10 must be used
+    to connect to the TLC(s).
+
+    If you are using a plain Arduino (10k, 2009, Uno) with the old ethernet library version, eg,
+    with an Arduino IDE <= 0018, apply the patch described on the comment by toffe82 at
+    June 9th, 2009 at 5:23 pm on this page:
+    http://mcukits.com/2009/04/06/arduino-ethernet-shield-mega-hack/. If you are using the same library
+    on an Arduino Mega apply the patch on the same page on the April 14th, 2009 Update.
+
+    If using a version of the Arduino IDE >= 0019 with the Ethernet library separated from the
+    SPI, you must perform the following edits:
+
+    Locate the SPI.h file in your Arduino install and insert after all the #define's:
+
+      #if !defined(__AVR_ATmega1280__) && !defined(__AVR_ATmega2560__)
+      #define REROUTED_SS 8 // Support for Ethernet + TLC5940
+      #endif
+
+    Locate the SPI.cpp in the same dir and make the following changes:
+
+    From:
+      pinMode(SS, OUTPUT);
+    To:
+      pinMode(SS, OUTPUT);
+      #if !defined(__AVR_ATmega1280__) && !defined(__AVR_ATmega2560__)
+      pinMode(REROUTED_SS, OUTPUT);
+      #endif
+
+    From:
+      digitalWrite(SS, HIGH);
+    To:
+      digitalWrite(SS, HIGH);
+      #if !defined(__AVR_ATmega1280__) && !defined(__AVR_ATmega2560__)
+      digitalWrite(REROUTED_SS, HIGH);
+      #endif
+
+    Locate the w5100.h file in the Arduino Ethernet library, and replace the lines:
+
+      #else
+        inline static void initSS()    { DDRB  |=  _BV(2); };
+        inline static void setSS()     { PORTB &= ~_BV(2); };
+        inline static void resetSS()   { PORTB |=  _BV(2); };
+      #endif
+
+    With:
+
+      #else
+        inline static void initSS()    { DDRB  |=  _BV(0)|_BV(2); };
+        inline static void setSS()     { PORTB &= ~_BV(0); };
+        inline static void resetSS()   { PORTB |=  _BV(0)|_BV(2); };
+      #endif
+
+    Note: BV(2) stands for pin 10, while BV(0) stands for pin 8.
+
+    Depending on the Arduino board / Ethernet shield being used, the connections
+    between the Arduino, the Ethernet Shield and the TLC must be performed differently:
+
+    Arduino (10k, 2009, Uno) / Ethernet Shield (v4, v5)
+
+      The problem with this combination is the overlapping of uses for pin 10.
+
+      Plug the ethernet shield on the Arduino as explained in
+      http://mcukits.com/2009/04/06/arduino-ethernet-shield-mega-hack/, but only bend out pin 10.
+      Connect pin 8 to 10 on the shield.
+
+      Connect pin 10 directly from the Arduino to the TLC as stated in the beginning of this document.
+
+    Arduino Mega (Mega, Mega2560) / Ethernet Shield v4
+
+      The problem with this combination is that the version 4 of the Ethernet Shield wasn't
+      compatible with the Arduino Mega. It can be made to work by using this instructions .
+
+      Plug the ethernet shield on the Arduino as explained in
+      http://mcukits.com/2009/04/06/arduino-ethernet-shield-mega-hack/, ie, bending the
+      pins 11, 12, 13 so that they aren't connected to the Arduino. Also, as explained there,
+      connect the shield pins 11, 12, 13 of the ethernet shield respectively to pins 51, 50, 52 of
+      the Arduino.
+
+      Connect pins 11 and 12 directly from the Arduino to the TLC as stated in the beginning of this document.
+
+    Arduino Mega (Mega, Mega2560) / Ethernet Shield v5
+
+      There is no overlapping on pin usage between any of the components.
+
+      Just plug the shield on the Arduino and connect the pins as stated in the beginning of this document.
+
+  Arduino ICSP header notes:
+    Arduino Diecimilia/Duemilanove/Uno:                               +-------+-------+
+    SPI: 10 (SS), 11 (MOSI), 12 (MISO), 13 (SCK)        Arduino >>> 1 |  MISO | 5V    | 2
+    Arduino Mega:                                          ICSP >>> 3 |   SCK | MOSI  | 4
+    SPI: 50 (MISO), 51 (MOSI), 52 (SCK), 53 (SS)         Header >>> 5 | RESET | GND   | 6
+                                                                      +-------+-------+
+    The SS signal is not carried over the ICSP header. This means that the pin 10 bending hack described
+    in http://mcukits.com/2009/04/06/arduino-ethernet-shield-mega-hack/ works for v4 and v5 ethernet shields.
+
+  Tested on:
+    Arduino Mega, W/O Ethernet Shield, Ethernet Enabled
+    Arduino Mega, W/O Ethernet Shield, Ethernet Disabled
+    Arduino Mega, W Ethernet Shield v4, Ethernet Enabled
+    Arduino Mega, W Ethernet Shield v4, Ethernet Disabled
+    Arduino Mega, W Ethernet Shield v5, Ethernet Enabled
+    Arduino Mega, W Ethernet Shield v5, Ethernet Disabled
+
+    Arduino Diecimilia, W/O Ethernet Shield, Ethernet Enabled
+    Arduino Diecimilia, W/O Ethernet Shield, Ethernet Disabled
+    Arduino Diecimilia, W Ethernet Shield v4, Ethernet Enabled
+    Arduino Diecimilia, W Ethernet Shield v4, Ethernet Disabled
+    Arduino Diecimilia, W Ethernet Shield v5, Ethernet Enabled
+    Arduino Diecimilia, W Ethernet Shield v5, Ethernet Disabled
+
+  To test the assembly via USB, open the serial monitor in the arduino IDE as 9600 8N1 (the default values).
+
+  To test the network connection, use curl as in:
+    curl -i POST -H 'Content-Type: text/plain' -d '<command up to and including the ;>' http://beacon/lights
+
+  Example commands:
+
+    a;                 -> set all to alert
+    t;                 -> set all to test
+    b(1);              -> select second bar (and do nothing with it)
+    bm(3).r;           -> transition 1st and 2nd bar to red
+    bm(3).r!;          -> set 1st and 2nd bar to red immediately
+    r!.b(1).g.b(2).b;  -> all bars red, then transition 2nd to green and 3rd to blue
+    b(1).g!.b(2).b!.r; -> 2nd bar green, 3rd blue, then transition all to red
+    w.b(0).r!.b(1).g!.b(2).b!.b(3).rgb(255,255,255);
+    b(0).b!;
+    b(0).a.r!.g;
+
