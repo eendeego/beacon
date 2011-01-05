@@ -42,6 +42,7 @@ If you decide to give up after steps 1 or 2, you still have a cool lamp and poss
 If you get to this point, you can already use or dioder lights as an XFD device (even on the breadboard.)
 
 If you are going for the long run:
+
 1. (Optional) Get an Arduino Ethernet Shield (v5 is easier to use with an Arduino Mega)
     * Use a v4 shield if you already have one, or if you want to go cheaper (while stocks last)
     * Use a v5 shield if you are using an Arduino Mega
@@ -49,6 +50,14 @@ If you are going for the long run:
     * 1x Stripboard (Big/small enough to use as a shield)
     * 1x DIP28 Socket (Don't solder the TLC directly to the board)
     * 1x "Shield stacking headers for Arduino" or similar (Check the adafruit site)
+
+## Hello World using the USB/serial port
+
+The processing folder contains a project that changes colors on the bars and shows the alert mode.
+
+## Using with Hudson
+
+The node.js folder contains a script that updates the arduino (via ethernet).
 
 ## Caveat Emptor
 

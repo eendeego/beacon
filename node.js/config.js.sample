@@ -2,8 +2,11 @@
 // For other settings check the beacon.js file.
 
 module.exports = {
+  services : [
+    { name: 'hudson', url: 'http://hudson' }
+  ],
+
   beaconUrl : 'http://beacon',
-  hudsonUrl : 'http://hudson',
 
   updateInterval : 1000,
 
