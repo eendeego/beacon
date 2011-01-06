@@ -9,15 +9,6 @@ var fs   = require('fs'),
     logger = require('./logger'),
     service_checker = require('./service_checker');
 
-fs.readdirSync('checkers').forEach(function(module) {
-    try {
-      require('./checkers/' + module);
-    } catch(exception) {
-      logger.log('Problem reading module: "' + module + '": ' +
-                 exception.message + exception.stack);
-    }
-  });
-
 var config = function(config) {
   var beacon_url  = url.parse(config.beaconUrl);
   var beacon_host = beacon_url.hostname;
@@ -50,6 +41,15 @@ var config = function(config) {
 if(config.verbose()) {
   logger.enableLogging();
 }
+
+fs.readdirSync('checkers').forEach(function(module) {
+    try {
+      require('./checkers/' + module);
+    } catch(exception) {
+      logger.log('Problem reading module: "' + module + '": ' +
+                 exception.message + exception.stack);
+    }
+  });
 
 process.on('uncaughtException', function(err) {
   logger.log('Caught exception: ' + err.message + '\n' + err.stack);

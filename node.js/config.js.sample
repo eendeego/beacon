@@ -1,14 +1,15 @@
 // Copy this file to config.js and adjust URLs.
-// For other settings check the beacon.js file.
+// For other settings check beacon.js and the checkers source files.
 
 module.exports = {
   services : [
-    { name: 'hudson', url: 'http://hudson' }
+    { name: 'hudson', url: 'http://hudson/api/json' },
+    { name: 'nagios', url: 'http://nagios:3999/nagios/status' }
   ],
 
   beaconUrl : 'http://beacon',
 
-  updateInterval : 1000,
+  updateInterval : 15000,
 
-  verbose : true,
+  verbose : true
 };

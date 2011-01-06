@@ -1,4 +1,4 @@
-"use strict;"
+"use strict";
 
 // This is no log4j, keeping it simple (as much as possible)
 
@@ -33,12 +33,12 @@ var logger = disabledLogger;
 
 module.exports.log = function(message) {
   logger(message);
-}
+};
 
 module.exports.enableLogging = function() {
   logger = enabledLogger;
-}
+};
 
 module.exports.disableLogging = function() {
   logger = disabledLogger;
-}
+};
