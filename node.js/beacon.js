@@ -28,7 +28,6 @@ var config = function(config) {
 
     verbose : function() { return verbose; },
 
-    initCommand : config.initCommand || function() { return 'g!.w'; },
     heartStopCommand : function() {
         return 'hb(' + (update_interval/1000 + 5) + ',"' +
           (config.heartStopCommand && config.heartStopCommand() || 'r.p') +
@@ -76,9 +75,6 @@ function sendCommand(cmd) {
   request.end();
 }
 
-
-sendCommand(config.heartStopCommand() + ';' + config.initCommand() + ';');
-
 var checkers = config.services().map(function(service) {
   var checker = service_checker.getChecker(service.name);
   if(checker) {
@@ -89,15 +85,20 @@ var checkers = config.services().map(function(service) {
   }
 }).filter(function(e) { return e; });
 
-setInterval(function() {
-    var totalChecks = checkers.length;
-    var commands = [];
-    checkers.forEach(function(checker) {
-        checker.check(function(command) {
-          commands.push(command);
-          if(--totalChecks === 0) {
-            sendCommand(commands.join('.')+';');
-          }
-        });
+function checkStuff() {
+  var totalChecks = checkers.length;
+  var commands = [];
+  checkers.forEach(function(checker) {
+      checker.check(function(command) {
+        commands.push(command);
+        if(--totalChecks === 0) {
+          sendCommand(commands.join('.')+';');
+        }
       });
-  }, config.updateInterval());
+    });
+}
+
+sendCommand(config.heartStopCommand() + ';');
+checkStuff();
+
+setInterval(checkStuff, config.updateInterval());
