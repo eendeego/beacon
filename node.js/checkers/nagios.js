@@ -1,3 +1,11 @@
+/**
+ * Check Nagios state through nagiosity.js.
+ * (https://github.com/luismreis/nagiosity.js)
+ *
+ * Can ignore or only pay attention to a set of hosts / services
+ * via except/only configuration options.
+ */
+
 "use strict";
 
 var util = require('util'),

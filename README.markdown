@@ -51,13 +51,21 @@ If you are going for the long run:
     * 1x DIP28 Socket (Don't solder the TLC directly to the board)
     * 1x "Shield stacking headers for Arduino" or similar (Check the adafruit site)
 
-## Hello World using the USB/serial port
+## USB/Serial Port Hello World
 
 The processing folder contains a project that changes colors on the bars and shows the alert mode.
 
-## Using with Hudson
+## Extreme Feedback Device usage
 
-The node.js folder contains a script that updates the arduino (via ethernet).
+The node.js folder contains an application that updates the arduino via ethernet (currently there's no reliable support for serial
+port on node.js).
+
+Currently supported continuous integration / monitoring systems:
+
+* [Hudson](http://hudson-ci.org/) - via its json api.
+* [Nagios](http://www.nagios.org/) - via [nagiosity.js](https://github.com/luismreis/nagiosity.js).
+
+The application is very customizable, and is prepared for building support for other systems.
 
 ## Caveat Emptor
 

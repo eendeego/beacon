@@ -1,3 +1,8 @@
+/**
+ * Check hudson state through its json api
+ * (https://github.com/luismreis/nagiosity.js)
+ */
+
 "use strict";
 
 var util = require('util'),
