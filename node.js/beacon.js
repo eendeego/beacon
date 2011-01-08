@@ -9,7 +9,7 @@ var fs   = require('fs'),
     logger = require('./logger'),
     service_checker = require('./service_checker');
 
-var config = function(config) {
+var config = function (config) {
   var beacon_url  = url.parse(config.beaconUrl);
   var beacon_host = beacon_url.hostname;
   var beacon_port = beacon_url.port || 80;
@@ -25,16 +25,18 @@ var config = function(config) {
     beaconPort : function() { return beacon_port; },
 
     updateInterval : function() { return update_interval; },
-
-    verbose : function() { return verbose; },
-
+    heartbeatTimeout : function() {
+        return config.heartbeatTimeout ||
+          Math.ceil(this.updateInterval * 4 / 3000);
+      },
     heartStopCommand : function() {
-        return 'hb(' + (update_interval/1000 + 5) + ',"' +
+        return 'hb(' + this.heartbeatTimeout() + ',"' +
           (config.heartStopCommand && config.heartStopCommand() || 'r.p') +
           '")';
-      }
-  };
+      },
 
+    verbose : function() { return verbose; }
+  };
 }(require('./config'));
 
 if(config.verbose()) {
